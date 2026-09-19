@@ -10,6 +10,12 @@ export interface InventoryRepository {
   list(): Product[];
   get(id: string): Product | undefined;
   decrement(id: string, quantity: number): Product | undefined;
+  applyRestoration(
+    key: string,
+    productId: string,
+    quantity: number,
+    appliedAt: string,
+  ): { product: Product; applied: boolean } | undefined;
 }
 
 export class InventoryService {
@@ -41,5 +47,22 @@ export class InventoryService {
     const product = this.repository.decrement(productId, quantity);
     if (!product) throw Object.assign(new Error("Insufficient stock"), { status: 409 });
     return product;
+  }
+
+  restore(productId: string, quantity: number, idempotencyKey: string): Product {
+    if (typeof idempotencyKey !== "string" || idempotencyKey.trim() === "") {
+      throw Object.assign(new Error("An idempotency key is required"), { status: 400 });
+    }
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw Object.assign(new Error("Quantity must be a positive integer"), { status: 400 });
+    }
+    const result = this.repository.applyRestoration(
+      idempotencyKey,
+      productId,
+      quantity,
+      new Date().toISOString(),
+    );
+    if (!result) throw Object.assign(new Error("Product not found"), { status: 404 });
+    return result.product;
   }
 }

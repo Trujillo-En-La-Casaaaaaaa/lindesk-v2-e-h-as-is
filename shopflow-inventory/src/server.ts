@@ -21,6 +21,14 @@ createServer(async (req, res) => {
       const body = await jsonBody(req);
       return json(res, 200, service.decrement(String(body.productId ?? ""), Number(body.quantity)));
     }
+    if (req.method === "POST" && url.pathname === "/inventory/restore") {
+      const body = await jsonBody(req);
+      return json(res, 200, service.restore(
+        String(body.productId ?? ""),
+        Number(body.quantity),
+        String(body.idempotencyKey ?? ""),
+      ));
+    }
     json(res, 404, { error: "Not found" });
   } catch (error) {
     fail(res, error);

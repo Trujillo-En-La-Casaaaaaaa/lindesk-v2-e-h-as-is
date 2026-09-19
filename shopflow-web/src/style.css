@@ -1,1 +1,6 @@
 body{font-family:system-ui,sans-serif;background:#f5f6f8;color:#17202a;margin:0}main{max-width:900px;margin:auto;padding:2rem}section{background:white;padding:1.25rem;margin:1rem 0;border-radius:10px}.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.products article{border:1px solid #d7dce2;border-radius:8px;padding:1rem}form{display:flex;flex-wrap:wrap;gap:.75rem}input,select,button{font:inherit;padding:.6rem}.error{color:#a00}
+.cancel-reason{display:flex;flex-direction:column;gap:.35rem;margin-top:1rem}
+.cancel-reason span{font-size:.85rem;color:#4a5560}
+.order-actions{display:flex;gap:.75rem;margin-top:.75rem}
+.order-actions .cancel{background:white;border:1px solid #a00;color:#a00}
+.cancellation{margin-top:.75rem}

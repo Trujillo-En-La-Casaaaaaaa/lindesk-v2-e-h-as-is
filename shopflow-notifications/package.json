@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "npm run build"
+    "test": "npm run build && node --test dist/messages.test.js dist/server.test.js"
   },
   "devDependencies": {
     "@types/node": "22.15.3",

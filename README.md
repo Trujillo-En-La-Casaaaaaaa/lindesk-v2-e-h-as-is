@@ -1,10 +1,19 @@
-# ShopFlow AS-IS — evolución · complejidad alta (E-H)
+# ShopFlow — E-H (AS-IS → resultado)
 
-Este repositorio es el **sistema de partida** (fixture congelado `F3-high`) que se le entregó a LinDesk en el escenario **E-H**. **No es un resultado de LinDesk.**
+Este repositorio muestra la **evolución** como historial de Git (dos commits):
 
-Compare con el resultado: https://github.com/Trujillo-En-La-Casaaaaaaa/lindesk-v2-e-h
+1. Tag [`as-is`](https://github.com/Trujillo-En-La-Casaaaaaaa/lindesk-v2-e-h-as-is/tree/as-is) — fixture congelado, **antes** de LinDesk.
+2. Rama `main` (este árbol) — resultado de LinDesk, corrida `20260918-194744`.
 
-Identificador de la corrida del resultado: `20260918-194744` (solo trazabilidad).
+**Diff:** https://github.com/Trujillo-En-La-Casaaaaaaa/lindesk-v2-e-h-as-is/compare/as-is...main
+
+El encargo congelado está en [`TASK.md`](./TASK.md). Este paquete es solo código fuente.
+
+---
+
+# ShopFlow — evolución · complejidad alta (E-H)
+
+Paquete de entrevista (artefacto congelado). Contiene el árbol de ShopFlow del escenario **E-H**. **No es LinDesk**; es el software de dominio que se evalúa.
 
 ## Qué es ShopFlow
 
@@ -33,17 +42,29 @@ Reglas de cancelación cuando sí aplica:
 - reintentos repetidos no deben restaurar stock dos veces.
 
 
-## Arquitectura de este baseline
+## Este escenario (E-H)
 
-Seis repositorios de microservicios (web, gateway, orders, inventory, notifications, infra) con dueños de datos ya definidos. LinDesk debía conservar esos dueños.
+| | |
+|---|---|
+| Código | `E-H` |
+| Ciclo de vida | Evolución (se parte de un ecosistema ya existente) |
+| Complejidad arquitectónica | Alta — preservar microservicios y dueños de datos |
+| Identificador de corrida | `20260918-194744` (solo trazabilidad) |
 
-En este AS-IS el comportamiento ya cubre catálogo, inventario, pedidos, envío y notificación de confirmación. **No incluye cancelación de pedido por el cliente.**
+Baseline **antes** de LinDesk (AS-IS): https://github.com/Trujillo-En-La-Casaaaaaaa/lindesk-v2-e-h-as-is
 
-### Encargo que se aplicó **sobre** este baseline
+Inspeccione primero el AS-IS y después este resultado.
 
-Añadir cancelación a través de frontend y gateway, restaurando stock una vez y notificando, sin colapsar servicios.
 
-El texto **exacto** está en [`TASK.md`](./TASK.md) (inglés, congelado). Léalo aquí y luego abra el repositorio de resultado.
+### Arquitectura pedida
+
+El baseline ya es de seis repositorios. Pedidos, inventario y notificaciones siguen siendo dueños de sus datos. El web entra por el gateway. Los servicios no escriben en la base de otro. No colapsar servicios ni crear repositorios nuevos.
+
+### Encargo (resumen)
+
+Implementar **cancelación de pedido** a través del frontend y el gateway, respetando dueños de datos, con restauración de stock una sola vez y notificación. Preservar lo existente. Sin refactor no relacionado.
+
+El texto **exacto** del encargo está en [`TASK.md`](./TASK.md). Úselo como contrato.
 
 ### Carpetas de este árbol
 
@@ -56,7 +77,9 @@ El texto **exacto** está en [`TASK.md`](./TASK.md) (inglés, congelado). Léalo
 
 ## Cómo usarlo en la entrevista
 
-1. Inspeccione este baseline primero (cómo está hecho ShopFlow hoy).
-2. Lea `TASK.md`.
-3. Pase al repositorio de resultado y compare. En evolución debe preservarse la arquitectura; en migración debe cambiar de forma controlada y **sin** añadir cancelación.
-4. Este paquete es **solo código fuente**. Etapa B no está incluida.
+1. Lea primero `TASK.md` (el encargo congelado; está en inglés porque así se le dio al sistema).
+2. Recorra los directorios de producto listados arriba. Este paquete es **solo código fuente** (sin `node_modules`, builds ni informes de análisis).
+3. Juzgue el código frente al encargo: requisitos funcionales **y** restricciones arquitectónicas. Un sistema que “parece funcionar” pero ignora los límites del escenario no cumple el contrato.
+4. No trate este README como veredicto de calidad: es contexto. La puntuación es del experto sobre el código.
+5. Etapa B (`AGENTS.md`, grafo C4) **no** está en este repositorio. LinDesk en ejecución se muestra por RDP, aparte de este árbol de GitHub.
+

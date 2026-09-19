@@ -17,6 +17,6 @@ export function json(res: ServerResponse, status: number, body: unknown): void {
 }
 
 export function fail(res: ServerResponse, error: unknown): void {
-  const value = error as { status?: number; message?: string };
-  json(res, value.status ?? 500, { error: value.message ?? "Internal error" });
+  const value = error as { status?: number; message?: string; details?: Record<string, unknown> };
+  json(res, value.status ?? 500, { error: value.message ?? "Internal error", ...(value.details ?? {}) });
 }

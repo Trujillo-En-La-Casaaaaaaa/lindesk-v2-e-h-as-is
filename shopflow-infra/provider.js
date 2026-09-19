@@ -8,6 +8,15 @@ const messages = existsSync(path)
   ? readFileSync(path, "utf8").split("\n").filter(Boolean).map(line => JSON.parse(line))
   : [];
 
+// Rebuild the idempotency index from the persisted log. Only messages that
+// carry a non-empty caller-supplied idempotencyKey participate in deduplication.
+const idempotencyIndex = new Map();
+for (const message of messages) {
+  if (typeof message.idempotencyKey === "string" && message.idempotencyKey.length > 0) {
+    idempotencyIndex.set(message.idempotencyKey, message);
+  }
+}
+
 createServer(async (req, res) => {
   res.setHeader("content-type", "application/json");
   if (req.method === "GET" && req.url === "/health") return res.end(JSON.stringify({ ok: true }));
@@ -16,8 +25,16 @@ createServer(async (req, res) => {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
     const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    const key = input.idempotencyKey;
+    if (typeof key === "string" && key.length > 0 && idempotencyIndex.has(key)) {
+      // Already stored for this exact key: return the existing message and do
+      // not append a new in-memory entry or a new log line.
+      res.writeHead(200);
+      return res.end(JSON.stringify(idempotencyIndex.get(key)));
+    }
     const message = { id: `message-${messages.length + 1}`, ...input };
     messages.push(message);
+    if (typeof key === "string" && key.length > 0) idempotencyIndex.set(key, message);
     appendFileSync(path, `${JSON.stringify(message)}\n`);
     res.writeHead(201);
     return res.end(JSON.stringify(message));

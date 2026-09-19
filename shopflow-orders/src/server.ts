@@ -27,6 +27,12 @@ createServer(async (req, res) => {
       });
       return json(res, 201, order);
     }
+    const cancel = url.pathname.match(/^\/orders\/([^/]+)\/cancel$/);
+    if (req.method === "POST" && cancel) {
+      const body = await jsonBody(req);
+      const order = await service.cancel(decodeURIComponent(cancel[1]), String(body.reason ?? ""));
+      return json(res, 200, order);
+    }
     const detail = url.pathname.match(/^\/orders\/([^/]+)$/);
     if (req.method === "GET" && detail) return json(res, 200, service.get(decodeURIComponent(detail[1])));
     const ship = url.pathname.match(/^\/orders\/([^/]+)\/ship$/);
@@ -35,4 +41,10 @@ createServer(async (req, res) => {
   } catch (error) {
     fail(res, error);
   }
-}).listen(port, "0.0.0.0", () => console.log(`orders listening on ${port}`));
+}).listen(port, "0.0.0.0", () => {
+  console.log(`orders listening on ${port}`);
+  // Recovery path for a crash between the cancellation commit and its compensation.
+  void service.reconcileCancellations()
+    .then((reconciled) => console.log(`reconciled ${reconciled} pending cancellation(s)`))
+    .catch((error: unknown) => console.error("cancellation reconciliation failed", error));
+});

@@ -1,19 +1,13 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
+import { createDestination } from "./routes.js";
+
 const orders = process.env.ORDERS_URL ?? "http://orders:3001";
 const inventory = process.env.INVENTORY_URL ?? "http://inventory:3002";
 const notifications = process.env.NOTIFICATIONS_URL ?? "http://notifications:3003";
 const port = Number(process.env.PORT ?? 3000);
 
-function destination(method: string, path: string): string | undefined {
-  if (method === "GET" && path === "/api/products") return `${inventory}/products`;
-  if (method === "GET" && /^\/api\/products\/[^/]+$/.test(path)) return `${inventory}${path.slice(4)}`;
-  if (method === "POST" && path === "/api/orders") return `${orders}/orders`;
-  if (method === "GET" && /^\/api\/orders\/[^/]+$/.test(path)) return `${orders}${path.slice(4)}`;
-  if (method === "POST" && /^\/api\/orders\/[^/]+\/ship$/.test(path)) return `${orders}${path.slice(4)}`;
-  if (method === "GET" && path === "/api/notifications") return `${notifications}/notifications`;
-  return undefined;
-}
+const destination = createDestination({ orders, inventory, notifications });
 
 async function body(req: IncomingMessage): Promise<Buffer | undefined> {
   const chunks: Buffer[] = [];

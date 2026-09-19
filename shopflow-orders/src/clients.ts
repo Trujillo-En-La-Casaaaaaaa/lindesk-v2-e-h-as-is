@@ -24,6 +24,11 @@ export class InventoryHttpClient implements InventoryPort {
       method: "POST", body: JSON.stringify({ productId, quantity }),
     });
   }
+  async restore(productId: string, quantity: number, idempotencyKey: string): Promise<void> {
+    await call(`${this.baseUrl}/inventory/restore`, {
+      method: "POST", body: JSON.stringify({ productId, quantity, idempotencyKey }),
+    });
+  }
 }
 
 export class NotificationHttpClient implements NotificationPort {
@@ -32,6 +37,12 @@ export class NotificationHttpClient implements NotificationPort {
     await call(`${this.baseUrl}/notifications/order-confirmation`, {
       method: "POST",
       body: JSON.stringify({ orderId: order.id, customerEmail: order.customerEmail }),
+    });
+  }
+  async orderCancellation(order: Order, reason: string): Promise<void> {
+    await call(`${this.baseUrl}/notifications/order-cancellation`, {
+      method: "POST",
+      body: JSON.stringify({ orderId: order.id, customerEmail: order.customerEmail, reason }),
     });
   }
 }

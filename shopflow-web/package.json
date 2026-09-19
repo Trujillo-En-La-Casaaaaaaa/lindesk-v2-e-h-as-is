@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
-    "test": "npm run build"
+    "test": "tsc -b && vite build && tsc src/cancelReason.ts --outDir .test-dist --target ES2022 --module ESNext --strict --skipLibCheck && node --test \"test/*.test.mjs\""
   },
   "dependencies": {
     "react": "19.1.0",
