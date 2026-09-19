@@ -1,0 +1,78 @@
+name: shopflow-f3
+services:
+  inventory:
+    build: ../shopflow-inventory
+    environment:
+      PORT: "3002"
+      DATABASE_PATH: /data/inventory.db
+    volumes:
+      - inventory_db:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  notification-provider:
+    build:
+      context: .
+      dockerfile: Dockerfile.provider
+    environment:
+      MESSAGE_LOG_PATH: /data/messages.jsonl
+    volumes:
+      - provider_data:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3004/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  notifications:
+    build: ../shopflow-notifications
+    environment:
+      PORT: "3003"
+      PROVIDER_URL: http://notification-provider:3004
+    depends_on:
+      notification-provider:
+        condition: service_healthy
+
+  orders:
+    build: ../shopflow-orders
+    environment:
+      PORT: "3001"
+      DATABASE_PATH: /data/orders.db
+      INVENTORY_URL: http://inventory:3002
+      NOTIFICATIONS_URL: http://notifications:3003
+    volumes:
+      - orders_db:/data
+    depends_on:
+      inventory:
+        condition: service_healthy
+      notifications:
+        condition: service_started
+
+  gateway:
+    build: ../shopflow-gateway
+    environment:
+      PORT: "3000"
+      ORDERS_URL: http://orders:3001
+      INVENTORY_URL: http://inventory:3002
+      NOTIFICATIONS_URL: http://notifications:3003
+    ports:
+      - "${GATEWAY_PORT:-3000}:3000"
+    depends_on:
+      - orders
+      - inventory
+      - notifications
+
+  web:
+    build: ../shopflow-web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - gateway
+
+volumes:
+  orders_db:
+  inventory_db:
+  provider_data:
